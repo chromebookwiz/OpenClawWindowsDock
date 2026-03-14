@@ -159,3 +159,105 @@ export const bundleSchema = z.object({
   definitions: z.array(taskDefinitionSchema).default([]),
   schedules: z.array(scheduleSchema).default([])
 });
+
+const mockOsPathSchema = z.string().min(1).max(240);
+const mockOsFeatureKeySchema = z.string().min(1).max(120).regex(/^[a-zA-Z0-9._-]+$/);
+
+export const mockOsTerminalSchema = z.object({
+  command: z.string().min(1).max(2000)
+});
+
+export const mockOsFileSchema = z.object({
+  path: mockOsPathSchema,
+  content: z.string().max(50000)
+});
+
+export const mockOsDeleteSchema = z.object({
+  path: mockOsPathSchema
+});
+
+export const mockOsAppSchema = z.object({
+  name: z.string().min(1).max(120),
+  description: z.string().max(500).optional(),
+  command: z.string().min(1).max(500).optional()
+});
+
+export const mockOsAppRemoveSchema = z.object({
+  name: z.string().min(1).max(120)
+});
+
+export const mockOsFeatureSchema = z.object({
+  key: mockOsFeatureKeySchema,
+  name: z.string().min(1).max(120),
+  description: z.string().max(500).optional(),
+  enabled: z.boolean().optional()
+});
+
+export const mockOsFeatureToggleSchema = z.object({
+  key: mockOsFeatureKeySchema,
+  enabled: z.boolean().optional()
+});
+
+export const mockOsPackageSchema = z.object({
+  name: z.string().min(1).max(120),
+  version: z.string().min(1).max(40).optional()
+});
+
+export const mockOsActionSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("command"),
+    command: z.string().min(1).max(2000)
+  }),
+  z.object({
+    type: z.literal("writeFile"),
+    path: mockOsPathSchema,
+    content: z.string().max(50000)
+  }),
+  z.object({
+    type: z.literal("deletePath"),
+    path: mockOsPathSchema
+  }),
+  z.object({
+    type: z.literal("upsertApp"),
+    name: z.string().min(1).max(120),
+    description: z.string().max(500).optional(),
+    command: z.string().min(1).max(500).optional()
+  }),
+  z.object({
+    type: z.literal("removeApp"),
+    name: z.string().min(1).max(120)
+  }),
+  z.object({
+    type: z.literal("launchApp"),
+    name: z.string().min(1).max(120)
+  }),
+  z.object({
+    type: z.literal("closeApp"),
+    name: z.string().min(1).max(120)
+  }),
+  z.object({
+    type: z.literal("upsertFeature"),
+    key: mockOsFeatureKeySchema,
+    name: z.string().min(1).max(120),
+    description: z.string().max(500).optional(),
+    enabled: z.boolean().optional()
+  }),
+  z.object({
+    type: z.literal("toggleFeature"),
+    key: mockOsFeatureKeySchema,
+    enabled: z.boolean().optional()
+  }),
+  z.object({
+    type: z.literal("installPackage"),
+    name: z.string().min(1).max(120),
+    version: z.string().min(1).max(40).optional()
+  }),
+  z.object({
+    type: z.literal("removePackage"),
+    name: z.string().min(1).max(120)
+  })
+]);
+
+export const mockOsBatchSchema = z.object({
+  actions: z.array(mockOsActionSchema).min(1).max(100)
+});

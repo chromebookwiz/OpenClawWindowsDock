@@ -84,7 +84,7 @@ export class BrowserSession {
     switch (step.type) {
       case "navigate": {
         await appendLog(`${taskId} step-${stepIndex + 1} navigate ${step.url}`);
-        await page.goto(step.url, { waitUntil: step.waitUntil ?? "load", timeout: config.defaultTimeoutMs });
+        await page.goto(step.url, { waitUntil: step.waitUntil ?? "load", timeout: timeoutMs });
         return page;
       }
 

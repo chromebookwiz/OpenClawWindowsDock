@@ -38,10 +38,26 @@ function readNumber(name: string, fallback: number): number {
   return Number.isFinite(parsedValue) ? parsedValue : fallback;
 }
 
+function readNumberFrom(names: string[], fallback: number): number {
+  for (const name of names) {
+    const rawValue = readValue(name);
+    if (!rawValue) {
+      continue;
+    }
+
+    const parsedValue = Number.parseInt(rawValue, 10);
+    if (Number.isFinite(parsedValue)) {
+      return parsedValue;
+    }
+  }
+
+  return fallback;
+}
+
 const dataRoot = readValue("DATA_ROOT") ?? "/app/data";
 
 export const config = {
-  port: readNumber("PORT", 3000),
+  port: readNumberFrom(["PORT", "OPENCLAW_PORT"], 3000),
   dataRoot,
   tasksDir: path.join(dataRoot, "tasks"),
   definitionsDir: path.join(dataRoot, "definitions"),
@@ -50,6 +66,7 @@ export const config = {
   webhooksDir: path.join(dataRoot, "webhooks"),
   artifactsDir: path.join(dataRoot, "artifacts"),
   logsDir: path.join(dataRoot, "logs"),
+  mockOsDir: path.join(dataRoot, "mock-os"),
   browserProfileDir: readValue("BROWSER_PROFILE_DIR") ?? path.join(dataRoot, "browser-profile"),
   browserHeadless: (readValue("BROWSER_HEADLESS") ?? "true").toLowerCase() !== "false",
   defaultTimeoutMs: readNumber("DEFAULT_TIMEOUT_MS", 15000),

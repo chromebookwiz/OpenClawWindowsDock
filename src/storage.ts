@@ -16,6 +16,7 @@ export async function ensureStorage(): Promise<void> {
     ensureDirectory(config.webhooksDir),
     ensureDirectory(config.artifactsDir),
     ensureDirectory(config.logsDir),
+    ensureDirectory(config.mockOsDir),
     ensureDirectory(config.browserProfileDir)
   ]);
 }

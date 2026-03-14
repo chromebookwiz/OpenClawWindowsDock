@@ -134,6 +134,25 @@ h1 {
   margin-top: 18px;
 }
 
+.message-banner {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 250, 241, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.message-banner.is-error {
+  color: var(--bad);
+  border-color: rgba(171, 47, 40, 0.2);
+}
+
+.message-banner.is-success {
+  color: var(--ok);
+  border-color: rgba(45, 125, 70, 0.2);
+}
+
 .metric,
 .panel {
   border: 1px solid var(--line);
@@ -290,7 +309,8 @@ button:hover,
 }
 
 input,
-textarea {
+textarea,
+select {
   width: 100%;
   padding: 12px 14px;
   border-radius: 16px;
@@ -316,6 +336,50 @@ textarea {
   display: none;
 }
 
+.mock-os-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mock-block {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(23, 34, 38, 0.08);
+  background: var(--surface-strong);
+}
+
+.mock-block h3 {
+  margin: 0 0 12px;
+}
+
+.terminal-output {
+  min-height: 220px;
+  margin: 14px 0 0;
+  padding: 14px;
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(23, 34, 38, 0.08);
+  background: #1a2429;
+  color: #eef4f2;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
 .compact-form {
   margin-top: 18px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -334,7 +398,8 @@ textarea {
 
 @media (max-width: 900px) {
   .hero,
-  .panel-grid {
+  .panel-grid,
+  .mock-os-grid {
     grid-template-columns: 1fr;
     display: grid;
   }

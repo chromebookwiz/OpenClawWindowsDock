@@ -38,7 +38,7 @@ If Docker Desktop is not installed, the one-click launcher cannot work.
 
 ## Folder contents you should know about
 
-- `OpenClawWindowsDock.cmd`: the easiest Windows launcher
+- `OpenClawWindowsDock.cmd`: the only Windows command launcher and the main entrypoint
 - `scripts/install-run.ps1`: PowerShell installer and starter
 - `scripts/stop.ps1`: stops the Docker stack
 - `scripts/status.ps1`: shows Docker/container status
@@ -61,6 +61,35 @@ If you want the shortest path first:
 If that worked, you can skip to the section called `First login and first task`.
 
 If you want to understand each step and set the OpenClaw mode correctly first, keep reading.
+
+## Mock OS and mock terminal
+
+The dashboard now includes a persistent mock OS that the model can edit without touching the real host machine.
+
+It supports:
+
+- a mock terminal with commands like `help`, `tree`, `find`, `grep`, `apps`, `ps`, `pkg install`, `pkg remove`, `open-app`, `close-app`, `write`, `mkdir`, `rm`, and `toggle-feature`
+- direct mock file editing from the dashboard
+- mock app install, launch, close, and removal
+- package-style installs and removals
+- mock feature creation and toggling
+- batch action application through a single structured request
+
+API endpoints for that surface:
+
+- `GET /mock-os`
+- `POST /mock-os/terminal`
+- `POST /mock-os/files`
+- `POST /mock-os/files/delete`
+- `POST /mock-os/apps`
+- `POST /mock-os/apps/remove`
+- `POST /mock-os/apps/launch`
+- `POST /mock-os/apps/close`
+- `POST /mock-os/features`
+- `POST /mock-os/features/toggle`
+- `POST /mock-os/packages`
+- `POST /mock-os/packages/remove`
+- `POST /mock-os/actions`
 
 ## Step 1: Open PowerShell in the project folder
 

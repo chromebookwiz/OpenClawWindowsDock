@@ -34,6 +34,8 @@
       </div>
     </section>
 
+    <section id="actionMessage" class="message-banner hidden"></section>
+
     <section class="metrics" id="metrics"></section>
 
     <section class="panel wide-panel">
@@ -86,6 +88,91 @@
         <span id="taskCount" class="badge">0</span>
       </div>
       <div id="tasks" class="stack"></div>
+    </section>
+
+    <section class="panel wide-panel">
+      <div class="panel-header">
+        <h2>Mock OS</h2>
+        <span id="mockOsCounts" class="badge">0 nodes · 0 apps · 0 features</span>
+      </div>
+      <div id="mockOsSummary" class="stack"></div>
+
+      <div class="mock-os-grid">
+        <div class="mock-block">
+          <h3>Mock Terminal</h3>
+          <form id="mockTerminalForm" class="form-stack">
+            <input id="mockTerminalCommand" type="text" placeholder='Try: help, ls "/Users/model", write "/Users/model/Documents/idea.txt" "Ship calculator app"' required>
+            <button class="secondary-button" type="submit">Run Command</button>
+          </form>
+          <pre id="mockTerminalHistory" class="terminal-output"></pre>
+        </div>
+
+        <div class="mock-block">
+          <h3>Edit Mock Files</h3>
+          <form id="mockFileForm" class="form-stack">
+            <input id="mockFilePath" type="text" placeholder="/Users/model/Documents/notes.txt" required>
+            <textarea id="mockFileContent" rows="8" spellcheck="false"></textarea>
+            <div class="actions">
+              <button class="secondary-button" type="submit">Save File</button>
+              <button id="mockFileDelete" class="ghost-button" type="button">Delete Path</button>
+            </div>
+          </form>
+          <div id="mockOsFiles" class="stack"></div>
+        </div>
+
+        <div class="mock-block">
+          <h3>Apps</h3>
+          <form id="mockAppForm" class="form-stack">
+            <input id="mockAppName" type="text" placeholder="Calculator" required>
+            <input id="mockAppCommand" type="text" placeholder="open /Apps/Calculator.app">
+            <textarea id="mockAppDescription" rows="4" placeholder="What this mock app does"></textarea>
+            <div class="actions">
+              <button class="secondary-button" type="submit">Install or Update App</button>
+              <button id="mockAppLaunch" class="ghost-button" type="button">Launch App</button>
+              <button id="mockAppClose" class="ghost-button" type="button">Close App</button>
+              <button id="mockAppRemove" class="ghost-button" type="button">Remove App</button>
+            </div>
+          </form>
+          <div id="mockOsApps" class="stack"></div>
+        </div>
+
+        <div class="mock-block">
+          <h3>Features</h3>
+          <form id="mockFeatureForm" class="form-stack">
+            <input id="mockFeatureKey" type="text" placeholder="notifications" required>
+            <input id="mockFeatureName" type="text" placeholder="Notifications" required>
+            <textarea id="mockFeatureDescription" rows="4" placeholder="Describe the feature"></textarea>
+            <label class="checkbox-row">
+              <input id="mockFeatureEnabled" type="checkbox" checked>
+              <span>Enabled</span>
+            </label>
+            <button class="secondary-button" type="submit">Save Feature</button>
+          </form>
+          <div id="mockOsFeatures" class="stack"></div>
+        </div>
+
+        <div class="mock-block">
+          <h3>Packages</h3>
+          <form id="mockPackageForm" class="form-stack">
+            <input id="mockPackageName" type="text" placeholder="image-tools" required>
+            <input id="mockPackageVersion" type="text" placeholder="1.0.0 or latest">
+            <div class="actions">
+              <button class="secondary-button" type="submit">Install or Update Package</button>
+              <button id="mockPackageRemove" class="ghost-button" type="button">Remove Package</button>
+            </div>
+          </form>
+          <div id="mockOsPackages" class="stack"></div>
+        </div>
+
+        <div class="mock-block">
+          <h3>Batch Actions</h3>
+          <form id="mockBatchForm" class="form-stack">
+            <textarea id="mockBatchPayload" rows="10" spellcheck="false"></textarea>
+            <button class="secondary-button" type="submit">Apply Action Batch</button>
+          </form>
+          <pre id="mockBatchSummary" class="terminal-output"></pre>
+        </div>
+      </div>
     </section>
 
     <section class="panel-grid bottom-grid">

@@ -7,8 +7,9 @@ import { sanitizeUser, signAuthToken, verifyAuthToken, verifyPassword } from "./
 import { BrowserSession } from "./browserSession";
 import { config } from "./config";
 import { DefinitionsStore } from "./definitionsStore";
+import { formatMockOsBatchResults, MockOsStore } from "./mockOsStore";
 import { OpenClawConnection } from "./openClawConnection";
-import { bundleSchema, browserTaskSchema, loginSchema, scheduleSchema, taskDefinitionSchema, userBootstrapSchema, userCreateSchema, webhookSchema } from "./schema";
+import { bundleSchema, browserTaskSchema, loginSchema, mockOsAppRemoveSchema, mockOsAppSchema, mockOsBatchSchema, mockOsDeleteSchema, mockOsFeatureSchema, mockOsFeatureToggleSchema, mockOsFileSchema, mockOsPackageSchema, mockOsTerminalSchema, scheduleSchema, taskDefinitionSchema, userBootstrapSchema, userCreateSchema, webhookSchema } from "./schema";
 import { ensureStorage, listArtifacts } from "./storage";
 import { ScheduleManager } from "./scheduleManager";
 import { TaskQueue } from "./taskQueue";
@@ -85,12 +86,13 @@ async function main(): Promise<void> {
   await taskQueue.initialize();
   const scheduleManager = new ScheduleManager(taskQueue);
   await scheduleManager.initialize();
+  const mockOsStore = new MockOsStore();
+  await mockOsStore.initialize();
 
   const app = express();
   app.use(express.json({ limit: "1mb" }));
   app.use(pinoHttp({ logger }));
   app.use("/dashboard/assets", express.static(path.join(process.cwd(), "public")));
-  app.use("/artifacts/files", express.static(config.artifactsDir));
 
   app.get("/auth/status", async (request, response) => {
     const usersExist = (await usersStore.count()) > 0;
@@ -234,6 +236,8 @@ async function main(): Promise<void> {
     authRequired("viewer")(request, response, next);
   });
 
+  app.use("/artifacts/files", authRequired("viewer"), express.static(config.artifactsDir));
+
   app.get("/dashboard", (_request, response) => {
     response.sendFile(path.join(process.cwd(), "public", "index.html"));
   });
@@ -254,7 +258,10 @@ async function main(): Promise<void> {
       usersEndpoint: "/users",
       bundlesExportEndpoint: "/bundles/export",
       bundlesImportEndpoint: "/bundles/import",
-      browserRestartEndpoint: "/browser/restart"
+      browserRestartEndpoint: "/browser/restart",
+      mockOsEndpoint: "/mock-os",
+      mockOsTerminalEndpoint: "/mock-os/terminal",
+      mockOsBatchEndpoint: "/mock-os/actions"
     });
   });
 
@@ -571,6 +578,206 @@ async function main(): Promise<void> {
   app.post("/browser/restart", authRequired("operator"), async (_request, response) => {
     await browserSession.restart();
     response.status(202).json({ status: "restarted" });
+  });
+
+  app.get("/mock-os", async (_request, response) => {
+    response.json(await mockOsStore.getState());
+  });
+
+  app.post("/mock-os/terminal", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsTerminalSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.runCommand(input.command));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock terminal payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to execute mock terminal command");
+      response.status(500).json({ error: "Failed to execute mock terminal command." });
+    }
+  });
+
+  app.post("/mock-os/files", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsFileSchema.parse(request.body);
+      response.status(201).json(await mockOsStore.writeFile(input.path, input.content));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS file payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to write mock OS file");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to write mock OS file." });
+    }
+  });
+
+  app.post("/mock-os/files/delete", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsDeleteSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.deletePath(input.path));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS delete payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to delete mock OS path");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to delete mock OS path." });
+    }
+  });
+
+  app.post("/mock-os/apps", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsAppSchema.parse(request.body);
+      response.status(201).json(await mockOsStore.upsertApp(input));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS app payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to save mock OS app");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to save mock OS app." });
+    }
+  });
+
+  app.post("/mock-os/apps/remove", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsAppRemoveSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.removeApp(input.name));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS app remove payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to remove mock OS app");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to remove mock OS app." });
+    }
+  });
+
+  app.post("/mock-os/apps/launch", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsAppRemoveSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.launchApp(input.name));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS app launch payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to launch mock OS app");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to launch mock OS app." });
+    }
+  });
+
+  app.post("/mock-os/apps/close", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsAppRemoveSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.closeApp(input.name));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS app close payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to close mock OS app");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to close mock OS app." });
+    }
+  });
+
+  app.post("/mock-os/features", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsFeatureSchema.parse(request.body);
+      response.status(201).json(await mockOsStore.upsertFeature(input));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS feature payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to save mock OS feature");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to save mock OS feature." });
+    }
+  });
+
+  app.post("/mock-os/features/toggle", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsFeatureToggleSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.toggleFeature(input.key, input.enabled));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS feature toggle payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to toggle mock OS feature");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to toggle mock OS feature." });
+    }
+  });
+
+  app.post("/mock-os/packages", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsPackageSchema.parse(request.body);
+      response.status(201).json(await mockOsStore.installPackage(input.name, input.version));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS package payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to install mock OS package");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to install mock OS package." });
+    }
+  });
+
+  app.post("/mock-os/packages/remove", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsAppRemoveSchema.parse(request.body);
+      response.status(202).json(await mockOsStore.removePackage(input.name));
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS package remove payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to remove mock OS package");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to remove mock OS package." });
+    }
+  });
+
+  app.post("/mock-os/actions", authRequired("operator"), async (request, response) => {
+    try {
+      const input = mockOsBatchSchema.parse(request.body);
+      const result = await mockOsStore.runActions(input.actions);
+      response.status(202).json({
+        ...result,
+        summary: formatMockOsBatchResults(result.results)
+      });
+    }
+    catch (error) {
+      if (error instanceof ZodError) {
+        response.status(400).json({ error: "Invalid mock OS actions payload.", issues: error.issues });
+        return;
+      }
+
+      request.log.error({ err: error }, "Failed to execute mock OS actions");
+      response.status(400).json({ error: error instanceof Error ? error.message : "Failed to execute mock OS actions." });
+    }
   });
 
   const server = app.listen(config.port, () => {

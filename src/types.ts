@@ -197,3 +197,64 @@ export type OpenClawStatus = {
   message: string;
   pid?: number;
 };
+
+export type MockOsNode = {
+  path: string;
+  kind: "directory" | "file";
+  createdAt: string;
+  updatedAt: string;
+  content?: string;
+};
+
+export type MockOsApp = {
+  id: string;
+  name: string;
+  description?: string;
+  command: string;
+  running: boolean;
+  installedAt: string;
+  updatedAt: string;
+  launchedAt?: string;
+};
+
+export type MockOsFeature = {
+  key: string;
+  name: string;
+  description?: string;
+  enabled: boolean;
+  updatedAt: string;
+};
+
+export type MockOsTerminalEntry = {
+  id: string;
+  command: string;
+  cwd: string;
+  output: string;
+  status: "completed" | "failed";
+  ranAt: string;
+};
+
+export type MockOsPackage = {
+  name: string;
+  version: string;
+  installedAt: string;
+  updatedAt: string;
+};
+
+export type MockOsActionResult = {
+  type: string;
+  target?: string;
+  status: "completed" | "failed";
+  message: string;
+};
+
+export type MockOsState = {
+  name: string;
+  version: string;
+  cwd: string;
+  nodes: MockOsNode[];
+  apps: MockOsApp[];
+  features: MockOsFeature[];
+  packages: MockOsPackage[];
+  terminalHistory: MockOsTerminalEntry[];
+};
