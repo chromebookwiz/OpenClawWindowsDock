@@ -53,8 +53,9 @@ If you want the shortest path first:
 1. Open the project folder.
 2. Double-click `OpenClawWindowsDock.cmd`.
 3. Wait for Docker to finish starting.
-4. Wait for your browser to open `http://localhost:3000/dashboard`.
-5. Create your first admin account on the dashboard.
+4. Answer the setup prompts the first time it asks.
+5. Wait for your browser to open `http://localhost:3000/dashboard`.
+6. Create your first admin account on the dashboard.
 
 If that worked, you can skip to the section called `First login and first task`.
 
@@ -70,21 +71,31 @@ Set-Location "C:\code\OpenWindows"
 
 If you downloaded the project somewhere else, change the path to match your folder.
 
-## Step 2: Create your local config file
+## Step 2: Let the launcher create your local config file
 
 The app uses a file named `.env` for local settings.
 
-If `.env` does not exist yet, create it from the example:
+You usually do not need to create or edit it by hand anymore.
+
+When you launch `OpenClawWindowsDock.cmd`, it will:
+
+1. Create `.env` from `.env.example` if it is missing.
+2. Ask you a few setup questions with simple prompts and numbered choices.
+3. Save your answers back into `.env`.
+
+If you want to create it manually anyway, you still can:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-If you use the one-click launcher, it will create `.env` automatically if it is missing.
+If you use the one-click launcher, it will create `.env` automatically if it is missing and fill in the important OpenClaw settings by prompting you.
 
 ## Step 3: Choose your OpenClaw mode
 
 This is the most important decision before first launch.
+
+The launcher will ask you this directly, so you do not need to open `.env` first unless you want to.
 
 ### Option A: `embedded` mode
 
@@ -141,7 +152,7 @@ What this means:
 
 If your external OpenClaw is not on the same machine, replace the example URL with the real hostname or IP.
 
-## Step 4: Review the rest of the important `.env` settings
+## Step 4: Optional manual review of the saved `.env` settings
 
 Open `.env` in an editor and check these values:
 
@@ -182,14 +193,17 @@ Or, if you prefer running the PowerShell script directly:
 What the installer does for you:
 
 1. Creates `.env` from `.env.example` if needed.
-2. Generates `AUTH_TOKEN_SECRET` if it still has the placeholder value.
-3. Checks whether Docker is installed.
-4. Tries to start Docker Desktop if Docker is installed but not yet running.
-5. Waits for the Docker engine to be ready.
-6. Builds the container.
-7. Starts the container in the background.
-8. Waits for `http://localhost:3000/health` or your custom port.
-9. Opens the dashboard in your browser.
+2. Prompts you for the important setup values on first run or when required values are missing.
+3. Lets you answer the mode prompts by typing either the number or the mode name.
+4. Saves those answers into `.env`.
+5. Generates `AUTH_TOKEN_SECRET` if it still has the placeholder value.
+6. Checks whether Docker is installed.
+7. Tries to start Docker Desktop if Docker is installed but not yet running.
+8. Waits for the Docker engine to be ready.
+9. Builds the container.
+10. Starts the container in the background.
+11. Waits for `http://localhost:3000/health` or your custom port.
+12. Opens the dashboard in your browser.
 
 ## Step 6: What you should see when startup succeeds
 
