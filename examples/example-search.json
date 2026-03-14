@@ -1,0 +1,22 @@
+{
+  "name": "example-search",
+  "steps": [
+    {
+      "type": "navigate",
+      "url": "https://example.com"
+    },
+    {
+      "type": "waitForSelector",
+      "selector": "h1"
+    },
+    {
+      "type": "extractText",
+      "selector": "h1",
+      "outputKey": "headline"
+    },
+    {
+      "type": "screenshot",
+      "fileName": "example-home.png"
+    }
+  ]
+}

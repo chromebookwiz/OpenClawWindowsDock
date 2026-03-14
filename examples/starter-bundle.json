@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "name": "starter-bundle",
+  "definitions": [
+    {
+      "name": "example-definition",
+      "description": "Capture the main heading from example.com.",
+      "request": {
+        "name": "example-definition",
+        "steps": [
+          {
+            "type": "navigate",
+            "url": "https://example.com"
+          },
+          {
+            "type": "waitForSelector",
+            "selector": "h1"
+          },
+          {
+            "type": "extractText",
+            "selector": "h1",
+            "outputKey": "headline"
+          },
+          {
+            "type": "screenshot",
+            "fileName": "starter-bundle.png"
+          }
+        ]
+      }
+    }
+  ],
+  "schedules": [
+    {
+      "name": "example-hourly",
+      "enabled": false,
+      "mode": "cron",
+      "cronExpression": "0 * * * *",
+      "intervalMinutes": 60,
+      "request": {
+        "name": "example-hourly",
+        "steps": [
+          {
+            "type": "navigate",
+            "url": "https://example.com"
+          },
+          {
+            "type": "screenshot",
+            "fileName": "example-hourly.png"
+          }
+        ]
+      }
+    }
+  ]
+}

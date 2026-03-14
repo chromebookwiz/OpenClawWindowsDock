@@ -1,0 +1,51 @@
+services:
+  openclawwindowsdock:
+    build:
+      context: .
+    image: openclawwindowsdock:local
+    container_name: openclawwindowsdock
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${OPENCLAW_PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      DATA_ROOT: /app/data
+      BROWSER_PROFILE_DIR: /app/data/browser-profile
+      BROWSER_HEADLESS: ${BROWSER_HEADLESS:-true}
+      DEFAULT_TIMEOUT_MS: ${DEFAULT_TIMEOUT_MS:-15000}
+      SCHEDULER_TICK_MS: ${SCHEDULER_TICK_MS:-15000}
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:-openclawwindowsdock-local-dev-secret}
+      AUTH_TOKEN_TTL_HOURS: ${AUTH_TOKEN_TTL_HOURS:-12}
+      OPENCLAW_MODE: ${OPENCLAW_MODE:-embedded}
+      OPENCLAW_BASE_URL: ${OPENCLAW_BASE_URL:-http://127.0.0.1:8080}
+      OPENCLAW_HEALTH_PATH: ${OPENCLAW_HEALTH_PATH:-/health}
+      OPENCLAW_START_COMMAND: ${OPENCLAW_START_COMMAND:-}
+      OPENCLAW_WORKING_DIR: ${OPENCLAW_WORKING_DIR:-/app}
+      OPENCLAW_START_TIMEOUT_MS: ${OPENCLAW_START_TIMEOUT_MS:-30000}
+    volumes:
+      - openclaw_tasks:/app/data/tasks
+      - openclaw_definitions:/app/data/definitions
+      - openclaw_schedules:/app/data/schedules
+      - openclaw_users:/app/data/users
+      - openclaw_webhooks:/app/data/webhooks
+      - openclaw_artifacts:/app/data/artifacts
+      - openclaw_logs:/app/data/logs
+      - openclaw_browser:/app/data/browser-profile
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  openclaw_tasks:
+  openclaw_definitions:
+  openclaw_schedules:
+  openclaw_users:
+  openclaw_webhooks:
+  openclaw_artifacts:
+  openclaw_logs:
+  openclaw_browser:
