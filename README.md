@@ -54,8 +54,9 @@ If you want the shortest path first:
 2. Double-click `OpenClawWindowsDock.cmd`.
 3. Wait for Docker to finish starting.
 4. Answer the setup prompts the first time it asks.
-5. Wait for your browser to open `http://localhost:3000/dashboard`.
-6. Create your first admin account on the dashboard.
+5. If no users exist yet, optionally create your first admin account when prompted, or skip it.
+6. Wait for your browser to open `http://localhost:3000/dashboard`.
+7. If you skipped admin creation in the launcher, create your first admin account on the dashboard.
 
 If that worked, you can skip to the section called `First login and first task`.
 
@@ -203,7 +204,8 @@ What the installer does for you:
 9. Builds the container.
 10. Starts the container in the background.
 11. Waits for `http://localhost:3000/health` or your custom port.
-12. Opens the dashboard in your browser.
+12. If no local users exist yet, offers to create the first admin account for you.
+13. Opens the dashboard in your browser.
 
 ## Step 6: What you should see when startup succeeds
 
@@ -237,16 +239,27 @@ Invoke-RestMethod -Uri "http://localhost:3000/status"
 
 The first time you open the dashboard, there are no users yet.
 
-You have two ways to create the first admin user.
+You have three ways to create the first admin user.
 
-### Method 1: use the dashboard
+### Method 1: let the launcher offer it after startup
+
+If no users exist yet, the launcher can ask:
+
+1. Whether you want to create the first admin now.
+2. What username to use.
+3. What password to use.
+4. To confirm the password.
+
+This step is optional. If you skip it, the app still starts normally and opens the dashboard.
+
+### Method 2: use the dashboard
 
 1. Open the dashboard.
 2. Enter a username.
 3. Enter a strong password.
 4. Submit the bootstrap form.
 
-### Method 2: use PowerShell
+### Method 3: use PowerShell
 
 Run this exactly as shown, then change the password to one you want:
 

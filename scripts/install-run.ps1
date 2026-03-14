@@ -219,6 +219,153 @@ function Prompt-Choice {
     }
 }
 
+function Prompt-YesNo {
+    param(
+        [string]$Label,
+        [bool]$DefaultValue = $false
+    )
+
+    $defaultText = if ($DefaultValue) { "Y/n" } else { "y/N" }
+
+    while ($true) {
+        $answer = Read-Host "$Label [$defaultText]"
+        if ([string]::IsNullOrWhiteSpace($answer)) {
+            return $DefaultValue
+        }
+
+        switch -Regex ($answer.Trim()) {
+            '^(y|yes)$' { return $true }
+            '^(n|no)$' { return $false }
+        }
+
+        Write-Step "Please answer yes or no."
+    }
+}
+
+function Read-PlainPassword {
+    param([string]$Label)
+
+    $secureValue = Read-Host $Label -AsSecureString
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureValue)
+
+    try {
+        return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+    }
+    finally {
+        if ($bstr -ne [IntPtr]::Zero) {
+            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+        }
+    }
+}
+
+function Prompt-AdminUsername {
+    while ($true) {
+        $username = Read-Host "Admin username [admin]"
+        if ([string]::IsNullOrWhiteSpace($username)) {
+            $username = "admin"
+        }
+
+        if ($username.Length -lt 3 -or $username.Length -gt 40) {
+            Write-Step "Username must be between 3 and 40 characters."
+            continue
+        }
+
+        if ($username -notmatch '^[a-zA-Z0-9._-]+$') {
+            Write-Step "Username can only use letters, numbers, dot, underscore, or dash."
+            continue
+        }
+
+        return $username
+    }
+}
+
+function Prompt-AdminPassword {
+    while ($true) {
+        $password = Read-PlainPassword -Label "Admin password"
+        if ($password.Length -lt 10 -or $password.Length -gt 200) {
+            Write-Step "Password must be between 10 and 200 characters."
+            continue
+        }
+
+        $confirmation = Read-PlainPassword -Label "Confirm admin password"
+        if ($password -ne $confirmation) {
+            Write-Step "Passwords did not match. Try again."
+            continue
+        }
+
+        return $password
+    }
+}
+
+function Maybe-BootstrapAdmin {
+    param([string]$Port)
+
+    try {
+        $authStatus = Invoke-RestMethod -Uri "http://localhost:$Port/auth/status" -Method Get -TimeoutSec 5
+    }
+    catch {
+        Write-Step "Could not check auth setup automatically. You can still create an admin from the dashboard."
+        return
+    }
+
+    if ($authStatus.usersExist) {
+        return
+    }
+
+    Write-Host ""
+    Write-Step "No local users exist yet."
+    if (-not (Prompt-YesNo -Label "Create the first admin account now" -DefaultValue $false)) {
+        Write-Step "Skipping admin creation. You can create the first admin from the dashboard later."
+        return
+    }
+
+    Write-Host ""
+    Write-Host "Create first admin account"
+    Write-Host "Username rules: 3 to 40 characters using letters, numbers, dot, underscore, or dash."
+    Write-Host "Password rules: at least 10 characters."
+
+    while ($true) {
+        $username = Prompt-AdminUsername
+        $password = Prompt-AdminPassword
+        $payload = @{
+            username = $username
+            password = $password
+        } | ConvertTo-Json
+
+        try {
+            $result = Invoke-RestMethod -Uri "http://localhost:$Port/auth/bootstrap" -Method Post -ContentType "application/json" -Body $payload -TimeoutSec 10
+            Write-Step "Created admin user '$($result.user.username)'."
+            return
+        }
+        catch {
+            $response = $_.Exception.Response
+            if ($response) {
+                try {
+                    $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
+                    $responseBody = $reader.ReadToEnd()
+                    if (-not [string]::IsNullOrWhiteSpace($responseBody)) {
+                        Write-Step "Admin creation failed: $responseBody"
+                    }
+                    else {
+                        Write-Step "Admin creation failed."
+                    }
+                }
+                catch {
+                    Write-Step "Admin creation failed."
+                }
+            }
+            else {
+                Write-Step "Admin creation failed."
+            }
+
+            if (-not (Prompt-YesNo -Label "Try entering the admin account again" -DefaultValue $true)) {
+                Write-Step "Skipping admin creation. You can create the first admin from the dashboard later."
+                return
+            }
+        }
+    }
+}
+
 function Configure-InteractiveEnv {
     $values = Read-EnvFile
     $shouldPrompt = -not (Test-Path (Join-Path (Split-Path -Parent $PSScriptRoot) ".env"))
@@ -392,6 +539,7 @@ do {
         if ($response.status -eq "ok") {
             Write-Step "OpenClawWindowsDock is ready."
             Write-Step "API: http://localhost:$port"
+            Maybe-BootstrapAdmin -Port $port
             Start-Process "http://localhost:$port/dashboard" | Out-Null
             exit 0
         }
