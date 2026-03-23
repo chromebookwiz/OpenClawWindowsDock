@@ -62,6 +62,43 @@ If that worked, you can skip to the section called `First login and first task`.
 
 If you want to understand each step and set the OpenClaw mode correctly first, keep reading.
 
+## Docker compose all-in-one startup (recommended)
+
+This repository now includes an updated `docker-compose.yml` that starts:
+
+- `openclawwindowsdock` (this app)
+- `ollama` (Llama inference server)
+- `openclaw` (OpenClaw agent service)
+
+Press a single command to start everything:
+
+```bash
+docker compose up -d --build
+```
+
+Then verify:
+
+```bash
+docker compose ps
+curl http://localhost:3000/health
+curl http://localhost:11434
+curl http://localhost:8080/health
+```
+
+If you want logs:
+
+```bash
+docker compose logs -f
+```
+
+Stop the stack:
+
+```bash
+docker compose down
+```
+
+---
+
 ## Mock OS and mock terminal
 
 The dashboard now includes a persistent mock OS that the model can edit without touching the real host machine.
